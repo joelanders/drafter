@@ -13,7 +13,6 @@ except ImportError:
 
 VERSION = "0.1"
 
-
 def yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
     class OrderedLoader(Loader):
         pass
@@ -28,23 +27,26 @@ def yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
     return yaml.load(stream, OrderedLoader)
 
 
-def walk(node, cb):
+def walk(node, cb, args):
 
     if isinstance(node, dict):
         for key, item in node.items():
-            cb(key, item)
-            walk(item, cb)
+            cb(key, item, args)
+            walk(item, cb, args)
     elif type(node) is list:
         for item in iter(node):
-            cb(None, item)
-            walk(item, cb)
+            cb(None, item, args)
+            walk(item, cb, args)
 
 
-def print_body(key, item):
+def print_body(key, item, content_type):
 
     if type(item) is OrderedDict and \
        'element' in item.keys() and \
-       item['element'] == 'asset':
+       item['element'] == 'asset' and \
+       'attributes' in item.keys() and \
+       'contentType' in item['attributes'].keys() and \
+       item['attributes']['contentType'] == content_type:
         print(item['content'])
 
 
@@ -65,6 +67,7 @@ def main():
                         action='store_true', default=False)
     parser.add_argument('-v', '--verbose', help='verbose (print file names)',
                         action='store_true', default=False)
+    parser.add_argument('-t', '--content_type', help='contentType to output (application/schema+json or application/json)')
     parser.add_argument('file', type=argparse.FileType('r'), nargs='*')
     args = parser.parse_args()
 
@@ -89,7 +92,7 @@ def main():
         else:
             data = yaml_load(f)
 
-        walk(data, print_body)
+        walk(data, print_body, args.content_type)
 
 
 if __name__ == '__main__':
