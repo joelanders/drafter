@@ -9,11 +9,13 @@ from collections import OrderedDict
 try:
     import yaml
 except ImportError:
-    yaml = None
+    yaml = None # script still fails two lines later
 
 VERSION = "0.1"
 
-def yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
+#def yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
+def yaml_load(*args):
+    raise Exception("no yaml")
     class OrderedLoader(Loader):
         pass
 
